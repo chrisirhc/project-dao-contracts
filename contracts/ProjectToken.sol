@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "hardhat/console.sol";
 
 /** 
  * @title ProjectToken
@@ -53,8 +54,7 @@ contract ProjectToken is ERC20 {
      * @param amountToDeposit into the treasury
      */
     function deposit(address erc20token, uint256 amountToDeposit) public {
-        // That's why you need to call approve first, which is another method that we need to pass.
-        IERC20(erc20token).safeTransfer(address(this), amountToDeposit);
+        IERC20(erc20token).safeTransferFrom(msg.sender, address(this), amountToDeposit);
         balanceOfTreasury[erc20token] += amountToDeposit;
     }
 
@@ -69,6 +69,8 @@ contract ProjectToken is ERC20 {
         );
         uint share = balanceOf(msg.sender);
         uint amountToRedeem = balanceOfTreasury[erc20token] * share / totalSupply();
+        // Pretty sketchy to have this here. Reconsider later.
+        IERC20(erc20token).approve(address(this), amountToRedeem);
         IERC20(erc20token).safeTransferFrom(address(this), msg.sender, amountToRedeem);
         balanceOfTreasury[erc20token] -= amountToRedeem;
         _burn(msg.sender, share);
