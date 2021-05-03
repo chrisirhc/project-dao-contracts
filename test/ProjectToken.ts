@@ -38,4 +38,16 @@ describe("ProjectToken contract", function() {
     expect(await testGoldToken.balanceOf(addr1.address)).to.equal(50 / 2);
   });
 
+  it("Should allow you to reward a bounty but also take a cut for the project", async function () {
+
+    // If you go through the ProjectDAO contract, you can reward the project's treasury, and take an increased
+    // stake/share in the project.
+    // Why would you want to do this? You want to incentivize further development on the project?
+
+    // Why don't people pay the person directly? They could. Then there's no stake.
+
+    // If you stop caring for a project, you can simply swap away your tokens or burn to claim the treasury.
+
+  });
+
 });
