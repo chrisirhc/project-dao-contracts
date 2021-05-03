@@ -38,7 +38,7 @@ contract ProjectToken is ERC20 {
     }
     
     uint public SHARE_DECIMALS = 5;
-    uint public SHARE_MULTIPLIER = 10^SHARE_DECIMALS;
+    uint public SHARE_MULTIPLIER = 10 ** SHARE_DECIMALS;
 
     /**
      * @dev get the percentage share for the shareholder with 5 decimal points
