@@ -13,14 +13,17 @@ contract ProjectToken is ERC20 {
     using SafeERC20 for IERC20;
 
     address public chairperson;
-    mapping(address => uint) public balanceOfTreasury;
+    address public erc20Token;
+    uint256 public balanceOfTreasury;
 
     /** 
      * @dev Create a new ballot to choose one of 'proposalNames'.
      * @param initialSupply starting number of totalShares
+     * @param _erc20Token to use for treasury
      */
-    constructor(uint256 initialSupply) ERC20("Project", "PRJ") {
+    constructor(uint256 initialSupply, address _erc20Token) ERC20("Project", "PRJ") {
         chairperson = msg.sender;
+        erc20Token = _erc20Token;
         _mint(msg.sender, initialSupply);
     }
     
@@ -50,29 +53,27 @@ contract ProjectToken is ERC20 {
     
     /** 
      * @dev Deposit into the treasury
-     * @param erc20token to deposit
      * @param amountToDeposit into the treasury
      */
-    function deposit(address erc20token, uint256 amountToDeposit) public {
-        IERC20(erc20token).safeTransferFrom(msg.sender, address(this), amountToDeposit);
-        balanceOfTreasury[erc20token] += amountToDeposit;
+    function deposit(uint256 amountToDeposit) public {
+        IERC20(erc20Token).safeTransferFrom(msg.sender, address(this), amountToDeposit);
+        balanceOfTreasury += amountToDeposit;
     }
 
     /** 
      * @dev Deposit into the treasury
-     * @param erc20token to redeem
      */
-    function redeemShares(address erc20token) public {
+    function redeemShares() public {
         require(
             msg.sender != chairperson,
             "Chairperson cannot redeem shares"
         );
         uint share = balanceOf(msg.sender);
-        uint amountToRedeem = balanceOfTreasury[erc20token] * share / totalSupply();
+        uint amountToRedeem = balanceOfTreasury * share / totalSupply();
         // Pretty sketchy to have this here. Reconsider later.
-        IERC20(erc20token).approve(address(this), amountToRedeem);
-        IERC20(erc20token).safeTransferFrom(address(this), msg.sender, amountToRedeem);
-        balanceOfTreasury[erc20token] -= amountToRedeem;
+        IERC20(erc20Token).approve(address(this), amountToRedeem);
+        IERC20(erc20Token).safeTransferFrom(address(this), msg.sender, amountToRedeem);
+        balanceOfTreasury -= amountToRedeem;
         _burn(msg.sender, share);
     }
 }

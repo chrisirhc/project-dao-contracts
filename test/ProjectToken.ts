@@ -6,9 +6,11 @@ describe("ProjectToken contract", function() {
     const [owner] = await ethers.getSigners();
 
     const ProjectToken = await ethers.getContractFactory("ProjectToken");
+    const TestGoldToken = await ethers.getContractFactory("TestGoldToken");
 
     const INITIAL_SUPPLY = 100;
-    const hardhatToken = await ProjectToken.deploy(INITIAL_SUPPLY);
+    const testGoldToken = await TestGoldToken.deploy(INITIAL_SUPPLY);
+    const hardhatToken = await ProjectToken.deploy(INITIAL_SUPPLY, testGoldToken.address);
 
     const ownerBalance = await hardhatToken.balanceOf(owner.address);
     expect(ownerBalance).to.equal(INITIAL_SUPPLY);
@@ -22,17 +24,17 @@ describe("ProjectToken contract", function() {
     const TestGoldToken = await ethers.getContractFactory("TestGoldToken");
 
     const INITIAL_SUPPLY = 50;
-    const hardhatToken = await ProjectToken.deploy(INITIAL_SUPPLY);
     const testGoldToken = await TestGoldToken.deploy(INITIAL_SUPPLY);
+    const hardhatToken = await ProjectToken.deploy(INITIAL_SUPPLY, testGoldToken.address);
  
     await testGoldToken.increaseAllowance(hardhatToken.address, INITIAL_SUPPLY);
-    await hardhatToken.deposit(testGoldToken.address, 50);
+    await hardhatToken.deposit(50);
 
     await hardhatToken.reward(addr1.address, 50);
     expect(await hardhatToken.balanceOf(addr1.address)).to.equal(50);
     
-    const addr1ToProjectToken = await hardhatToken.connect(addr1);
-    await addr1ToProjectToken.redeemShares(testGoldToken.address);
+    const addr1ToProjectToken = hardhatToken.connect(addr1);
+    await addr1ToProjectToken.redeemShares();
     expect(await testGoldToken.balanceOf(addr1.address)).to.equal(50 / 2);
   });
 
