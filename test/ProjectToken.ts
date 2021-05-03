@@ -39,6 +39,35 @@ describe("ProjectToken contract", function() {
   });
 
   it("Should allow you to reward a bounty but also take a cut for the project", async function () {
+    const [owner, depositorAddr, recipientAddr] = await ethers.getSigners();
+
+    const ProjectToken = await ethers.getContractFactory("ProjectToken");
+    const TestGoldToken = await ethers.getContractFactory("TestGoldToken");
+
+    const INITIAL_SUPPLY = 50;
+    const testGoldToken = await TestGoldToken.deploy(INITIAL_SUPPLY);
+    const projectToken = await ProjectToken.deploy(INITIAL_SUPPLY, testGoldToken.address);
+ 
+    await testGoldToken.transfer(depositorAddr.address, 50);
+    const depositorToProjectToken = testGoldToken.connect(depositorAddr);
+    await depositorToProjectToken.increaseAllowance(projectToken.address, 50);
+
+    const share = 0.5;
+    await projectToken.transact(depositorAddr.address, recipientAddr.address, 50,
+        share * 100 * 10 ** 5, 2);
+
+    expect(await testGoldToken.balanceOf(depositorAddr.address)).to.equal(0);
+
+    // Recipient gets part of the bounty
+    expect(await testGoldToken.balanceOf(recipientAddr.address)).to.equal(50 * share);
+
+    // Project treasury has increased
+    expect(await testGoldToken.balanceOf(projectToken.address)).to.equal(50 * share);
+
+    // Depositor receives a share
+    expect(await projectToken.balanceOf(depositorAddr.address)).to.equal(1);
+    // Recipient receives a share
+    expect(await projectToken.balanceOf(recipientAddr.address)).to.equal(1);
 
     // If you go through the ProjectDAO contract, you can reward the project's treasury, and take an increased
     // stake/share in the project.

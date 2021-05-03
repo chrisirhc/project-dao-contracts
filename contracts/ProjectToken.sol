@@ -72,6 +72,7 @@ contract ProjectToken is ERC20 {
      */
     function transact(address depositor, address recipient, uint256 amountToSend,
                       uint256 percentageToTreasury, uint256 newShare) public {
+        console.log("Percentage to treasury", percentageToTreasury, amountToSend * percentageToTreasury / (100 * 10 ** SHARE_DECIMALS));
         uint256 amountToTreasury = amountToSend * percentageToTreasury / (100 * 10 ** SHARE_DECIMALS);
         IERC20(erc20Token).safeTransferFrom(depositor, address(this), amountToTreasury);
         IERC20(erc20Token).safeTransferFrom(depositor, recipient, amountToSend - amountToTreasury);
